@@ -38,6 +38,11 @@ class ButtonCell: UICollectionViewCell {
         
     }
     
+    public func setOperationSelected(){
+        self.titleLabel.textColor = .orange
+        self.backgroundColor = .white
+    }
+    
     private func setupUI(){
         self.addSubview(titleLabel)
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -69,6 +74,10 @@ class ButtonCell: UICollectionViewCell {
             
         }
         
+    }
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        self.titleLabel.removeFromSuperview()
     }
     
 }

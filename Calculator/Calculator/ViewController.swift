@@ -40,6 +40,11 @@ class ViewController: UIViewController {
         self.collectionView.delegate = self
         self.collectionView.dataSource = self
         
+        self.viewModel.updateViews = { [weak self] in
+            DispatchQueue.main.async { [weak self] in
+                self?.collectionView.reloadData()
+            }
+        }
     }
     
     private func setupUI(){
@@ -57,6 +62,34 @@ class ViewController: UIViewController {
 }
 
 extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout{
+    
+    func numberOfSections(in collectionView: UICollectionView) -> Int {
+        return 1
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
+        guard let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: CalcHeaderCell.identifer, for: indexPath) as? CalcHeaderCell else {
+            fatalError("Failed to dequeue")
+        }
+        header.configure(currentClacText: self.viewModel.calHeaderLabel)
+        return header
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
+        let totalCellHeight = view.frame.size.width
+        let totalVerticalCellSpacing = CGFloat(10*4)
+        
+        let window = view.window?.windowScene?.keyWindow
+        let topPadding = window?.safeAreaInsets.top ?? 0
+        let bottonPadding = window?.safeAreaInsets.bottom ?? 0
+
+        let aveilableSreenHeight = view.frame.size.height - topPadding - bottonPadding
+        
+        let headerHeight = aveilableSreenHeight - totalCellHeight - totalVerticalCellSpacing
+        
+        return CGSize(width: view.frame.size.width, height: headerHeight)
+    }
+    
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return self.viewModel.calcButtonCells.count
     }
@@ -69,6 +102,12 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource, 
         
         cell.configure(with: calcButton)
         
+        if let operation = self.viewModel.operation, self.viewModel.secondNumber == nil{
+            if operation.title == calcButton.title {
+                cell.setOperationSelected()
+            }
+        }
+        
         return cell
     }
     
@@ -78,7 +117,7 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource, 
         switch calcButton {
         case let .number(int) where int == 0:
            return CGSize(
-            width: (view.frame.self.width/5)*2 + ((view.frame.self.width/5)/3),
+            width: (view.frame.size.width/5)*2 + ((view.frame.size.width/5)/3),
             height: view.frame.size.width/5
            )
             
@@ -95,6 +134,15 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource, 
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
         
         return (self.view.frame.width/5)/3
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
+        return 10
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        let buttonCell = self.viewModel.calcButtonCells[indexPath.row]
+        self.viewModel.didSelectButton(with: buttonCell)
     }
     
 }
