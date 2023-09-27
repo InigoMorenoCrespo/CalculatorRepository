@@ -9,6 +9,8 @@ import UIKit
 
 class ViewController: UIViewController {
     
+    let viewModel: ViewControllerViewModel
+    
     
     private let collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
@@ -20,6 +22,15 @@ class ViewController: UIViewController {
         collectionView.register(ButtonCell.self, forCellWithReuseIdentifier: ButtonCell.identifer)
         return collectionView
     }()
+    
+    init(_ viewModel: ViewControllerViewModel = ViewControllerViewModel()){
+        self.viewModel = viewModel
+        super.init(nibName: nil , bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -47,14 +58,17 @@ class ViewController: UIViewController {
 
 extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout{
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 6
+        return self.viewModel.calcButtonCells.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ButtonCell.identifer, for: indexPath) as? ButtonCell else{
             fatalError("failed")
         }
-        cell.backgroundColor = .systemPurple
+        let calcButton = self.viewModel.calcButtonCells[indexPath.row]
+        
+        cell.configure(with: calcButton)
+        
         return cell
     }
     
