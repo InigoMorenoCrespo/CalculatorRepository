@@ -28,16 +28,9 @@ class ViewControllerViewModel{
     private(set) lazy var calHeaderLabel: String = self.firstNumber ?? "0"
     private(set) var currentNumber : CurrentNumber = .firstNumber
     
-    private(set) var firstNumber: String? = nil {
-        didSet{
-            self.calHeaderLabel = self.firstNumber?.description ?? "0"
-        }
-    }
-    private(set) var secondNumber: String? = nil{
-        didSet{
-            self.calHeaderLabel = self.secondNumber?.description ?? "0"
-        }
-    }
+    private(set) var firstNumber: String? = nil { didSet { self.calHeaderLabel = self.firstNumber?.description ?? "0" } }
+       private(set) var secondNumber: String? = nil { didSet { self.calHeaderLabel = self.secondNumber?.description ?? "0" } }
+    
     
     private (set) var firstNumberIsDecimal: Bool = false
     private (set) var secondNumberIsDecimal: Bool = false
@@ -57,19 +50,20 @@ extension ViewControllerViewModel {
     
     public func didSelectButton(with calcButton: CalculatorButton){
         switch calcButton {
-        case .allClear:
-            self.didSelectAllClear()
-        case .plusMinus: self.didSelectPlusMinus()
-        case .percentage: self.didSelectPercentage()
-        case .divide: self.didSelectOperation(with: .divide)
-        case .multiply: self.didSelectOperation(with: .multiply)
-        case .subtract: self.didSelectOperation(with: .subtract)
-        case .add: self.didSelectOperation(with: .add)
-        case .equals: self.didSelectEqalsButton()
-        case .number(let number):
-            self.didSelectNumber(with: number)
-        case .decimal: self.didSelectDecimal()
-        }
+                case .allClear: self.didSelectAllClear()
+                case .plusMinus: self.didSelectPlusMinus()
+                case .percentage: self.didSelectPercentage()
+                case .divide: self.didSelectOperation(with: .divide)
+                case .multiply: self.didSelectOperation(with: .multiply)
+                case .subtract: self.didSelectOperation(with: .subtract)
+                case .add: self.didSelectOperation(with: .add)
+                case .equals: self.didSelectEqalsButton()
+                case .number(let number): self.didSelectNumber(with: number)
+                case .decimal: self.didSelectDecimal()
+                }
+    
+        
+        
         self.updateViews?()
     }
     
@@ -106,7 +100,7 @@ extension ViewControllerViewModel{
             
         }else{
          
-            if var secondNumber = self.secondNumber{
+            if let secondNumber = self.secondNumber{
                
                 self.secondNumber = secondNumber
                 self.prevNumber = secondNumber
@@ -140,7 +134,9 @@ extension ViewControllerViewModel{
                 let prevNumber = self.prevNumber?.toDouble{
             
             let result = self.getOperarionResult(prevOperation, firstNumber, prevNumber)
-            self.firstNumber = result.description
+            let resultString = self.eitherNumberIsDecimal ? result.description : result.toInt?.description
+            
+            self.firstNumber = resultString
             
         }
     }
@@ -157,9 +153,10 @@ extension ViewControllerViewModel{
                let secondNumber = self.secondNumber?.toDouble {
                 
                 let result = self.getOperarionResult(prevOperation, firstNumber, secondNumber)
+                let resultString = self.eitherNumberIsDecimal ? result.description : result.toInt?.description
                 
                 self.secondNumber = nil
-                self.firstNumber = result.description
+                self.firstNumber = resultString
                 self.currentNumber = .secondNumber
                 self.operation = operation
             } else {
@@ -234,31 +231,31 @@ extension ViewControllerViewModel {
             }
         }
     }
+    private func didSelectDecimal() {
         
-    private func didSelectDecimal(){
-        
-        if self.currentNumber == .firstNumber{
+        if self.currentNumber == .firstNumber {
             
             self.firstNumberIsDecimal = true
             
-            if let firstNumber = self.firstNumber, !firstNumber.contains(","){
-                self.firstNumber = firstNumber.appending(",")
+            if let firstNumber = self.firstNumber, !firstNumber.contains(".") {
+                self.firstNumber = firstNumber.appending(".")
             } else if self.firstNumber == nil {
-                self.firstNumber = "0,"
+                self.firstNumber = "0."
             }
             
-        }else if self.currentNumber == .secondNumber{
+        } else if self.currentNumber == .secondNumber {
             
             self.secondNumberIsDecimal = true
-            if let secondNumber = self.secondNumber, !secondNumber.contains(","){
-                self.secondNumber = secondNumber.appending(",")
-            } else if self.secondNumber == nil {
-                self.secondNumber = "0,"
-            }
             
+            if let secondNumber = self.secondNumber, !secondNumber.contains(".") {
+                self.secondNumber = secondNumber.appending(".")
+            } else if self.secondNumber == nil {
+                self.secondNumber = "0."
+            }
         }
         
     }
     
 }
+
 

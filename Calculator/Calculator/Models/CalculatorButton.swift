@@ -57,7 +57,7 @@ extension CalculatorButton{
         case .number(let int):
             return int.description
         case .decimal:
-            return ","
+            return "."
         }
     }
     
