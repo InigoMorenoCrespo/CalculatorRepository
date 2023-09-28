@@ -78,66 +78,56 @@ extension ViewControllerViewModel {
 extension ViewControllerViewModel {
     
     private func didSelectNumber(with number: Int) {
-        
-        if self.currentNumber == .firstNumber {
-            
-            if var firstNumber = self.firstNumber {
-                if firstNumber == "0" {
-                    firstNumber = number.description
+
+            if self.currentNumber == .firstNumber {
+
+                if let firstNumber = self.firstNumber, firstNumber == "0" {
+                    self.firstNumber = number.description
                 } else {
-                    firstNumber.append(number.description)
+                    self.firstNumber = (self.firstNumber ?? "") + number.description
                 }
-                self.firstNumber = firstNumber
-                self.prevNumber = firstNumber
-            } else {
-                self.firstNumber = number.description
-                self.prevNumber = number.description
-            }
-            
-        } else if self.currentNumber == .secondNumber {
-            
-            if var secondNumber = self.secondNumber {
-                if secondNumber == "0" {
-                    secondNumber = number.description
+
+                self.prevNumber = self.firstNumber
+
+            } else if self.currentNumber == .secondNumber {
+
+                if let secondNumber = self.secondNumber, secondNumber == "0" {
+                    self.secondNumber = number.description
                 } else {
-                    secondNumber.append(number.description)
+                    self.secondNumber = (self.secondNumber ?? "") + number.description
                 }
-                self.secondNumber = secondNumber
-                self.prevNumber = secondNumber
-            } else {
-                self.secondNumber = number.description
-                self.prevNumber = number.description
+
+                self.prevNumber = self.secondNumber
             }
         }
     }
-}
 
 extension ViewControllerViewModel {
     
     private func didSelectEqualsButton() {
-        if let operation = self.operation,
-            let firstNumber = self.firstNumber?.toDouble,
-            let secondNumber = self.secondNumber?.toDouble {
-            
-            let result = self.getOperarionResult(operation, firstNumber, secondNumber)
-            let resultString = result.description
-            
-            self.secondNumber = nil
-            self.prevOperation = operation
-            self.operation = nil
-            self.firstNumber = resultString
-            self.currentNumber = .firstNumber
+            if let operation = self.operation,
+                let firstNumber = self.firstNumber?.toDouble,
+                let secondNumber = self.secondNumber?.toDouble {
+                
+                let result = self.getOperarionResult(operation, firstNumber, secondNumber)
+                let resultString = result.description
+                
+                self.secondNumber = nil
+                self.prevOperation = operation
+                self.operation = nil
+                self.firstNumber = resultString
+                self.currentNumber = .firstNumber
+            }
+            else if let prevOperation = self.prevOperation,
+                let firstNumber = self.firstNumber?.toDouble,
+                let prevNumber = self.prevNumber?.toDouble {
+                
+                let result = self.getOperarionResult(prevOperation, firstNumber, prevNumber)
+                let resultString = result.description
+                
+                self.firstNumber = resultString
+            }
         }
-        else if let prevOperation = self.prevOperation,
-            let firstNumber = self.firstNumber?.toDouble,
-            let prevNumber = self.prevNumber?.toDouble {
-            
-            let result = self.getOperarionResult(prevOperation, firstNumber, prevNumber)
-            let resultString = result.description
-            
-            self.firstNumber = resultString
-        }
-    }
     
     private func didSelectOperation(with operation: CalculatorOperation) {
         
