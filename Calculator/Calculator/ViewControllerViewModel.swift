@@ -7,14 +7,14 @@
 
 import Foundation
 
-enum CurrentNumber{
+enum CurrentNumber {
     case firstNumber
     case secondNumber
 }
 
-class ViewControllerViewModel{
+class ViewControllerViewModel {
     
-    var updateViews: (()->Void)?
+    var updateViews: (() -> Void)?
     
     let calcButtonCells: [CalculatorButton] = [
         .allClear, .plusMinus, .percentage, .divide,
@@ -24,50 +24,45 @@ class ViewControllerViewModel{
         .number(0), .decimal, .equals
     ]
     
-    
     private(set) lazy var calHeaderLabel: String = self.firstNumber ?? "0"
-    private(set) var currentNumber : CurrentNumber = .firstNumber
+    private(set) var currentNumber: CurrentNumber = .firstNumber
     
     private(set) var firstNumber: String? = nil { didSet { self.calHeaderLabel = self.firstNumber?.description ?? "0" } }
-       private(set) var secondNumber: String? = nil { didSet { self.calHeaderLabel = self.secondNumber?.description ?? "0" } }
+    private(set) var secondNumber: String? = nil { didSet { self.calHeaderLabel = self.secondNumber?.description ?? "0" } }
     
+    private(set) var firstNumberIsDecimal: Bool = false
+    private(set) var secondNumberIsDecimal: Bool = false
     
-    private (set) var firstNumberIsDecimal: Bool = false
-    private (set) var secondNumberIsDecimal: Bool = false
-    
-    var eitherNumberIsDecimal: Bool{
-        
+    var eitherNumberIsDecimal: Bool {
         return firstNumberIsDecimal || secondNumberIsDecimal
     }
     
-    private (set) var operation: CalculatorOperation? = nil
+    private(set) var operation: CalculatorOperation? = nil
     
-    private (set) var prevNumber: String? = nil
-    private (set) var prevOperation: CalculatorOperation? = nil
+    private(set) var prevNumber: String? = nil
+    private(set) var prevOperation: CalculatorOperation? = nil
 }
 
 extension ViewControllerViewModel {
     
-    public func didSelectButton(with calcButton: CalculatorButton){
+    public func didSelectButton(with calcButton: CalculatorButton) {
         switch calcButton {
-                case .allClear: self.didSelectAllClear()
-                case .plusMinus: self.didSelectPlusMinus()
-                case .percentage: self.didSelectPercentage()
-                case .divide: self.didSelectOperation(with: .divide)
-                case .multiply: self.didSelectOperation(with: .multiply)
-                case .subtract: self.didSelectOperation(with: .subtract)
-                case .add: self.didSelectOperation(with: .add)
-                case .equals: self.didSelectEqalsButton()
-                case .number(let number): self.didSelectNumber(with: number)
-                case .decimal: self.didSelectDecimal()
-                }
-    
-        
+        case .allClear: self.didSelectAllClear()
+        case .plusMinus: self.didSelectPlusMinus()
+        case .percentage: self.didSelectPercentage()
+        case .divide: self.didSelectOperation(with: .divide)
+        case .multiply: self.didSelectOperation(with: .multiply)
+        case .subtract: self.didSelectOperation(with: .subtract)
+        case .add: self.didSelectOperation(with: .add)
+        case .equals: self.didSelectEqualsButton()
+        case .number(let number): self.didSelectNumber(with: number)
+        case .decimal: self.didSelectDecimal()
+        }
         
         self.updateViews?()
     }
     
-    private func didSelectAllClear(){
+    private func didSelectAllClear() {
         self.calHeaderLabel = "0"
         self.currentNumber = .firstNumber
         self.firstNumber = nil
@@ -80,48 +75,52 @@ extension ViewControllerViewModel {
     }
 }
 
-extension ViewControllerViewModel{
-    private func didSelectNumber(with number: Int){
-        
+extension ViewControllerViewModel {
+    
+    private func didSelectNumber(with number: Int) {
         
         if self.currentNumber == .firstNumber {
             
-            if var firstNumber = self.firstNumber{
-                
-                firstNumber.append(number.description)
+            if var firstNumber = self.firstNumber {
+                if firstNumber == "0" {
+                    firstNumber = number.description
+                } else {
+                    firstNumber.append(number.description)
+                }
                 self.firstNumber = firstNumber
                 self.prevNumber = firstNumber
-                
-            }else{
-                
+            } else {
                 self.firstNumber = number.description
                 self.prevNumber = number.description
             }
             
-        }else{
-         
-            if let secondNumber = self.secondNumber{
-               
+        } else if self.currentNumber == .secondNumber {
+            
+            if var secondNumber = self.secondNumber {
+                if secondNumber == "0" {
+                    secondNumber = number.description
+                } else {
+                    secondNumber.append(number.description)
+                }
                 self.secondNumber = secondNumber
                 self.prevNumber = secondNumber
-            }else{
+            } else {
                 self.secondNumber = number.description
                 self.prevNumber = number.description
             }
-            
         }
     }
 }
 
-extension ViewControllerViewModel{
+extension ViewControllerViewModel {
     
-    private func didSelectEqalsButton() {
+    private func didSelectEqualsButton() {
         if let operation = self.operation,
-           let firstNumber = self.firstNumber?.toDouble,
-           let secondNumber = self.secondNumber?.toDouble{
+            let firstNumber = self.firstNumber?.toDouble,
+            let secondNumber = self.secondNumber?.toDouble {
             
             let result = self.getOperarionResult(operation, firstNumber, secondNumber)
-            let resultString = self.eitherNumberIsDecimal ? result.description : result.toInt?.description
+            let resultString = result.description
             
             self.secondNumber = nil
             self.prevOperation = operation
@@ -130,30 +129,29 @@ extension ViewControllerViewModel{
             self.currentNumber = .firstNumber
         }
         else if let prevOperation = self.prevOperation,
-                let firstNumber = self.firstNumber?.toDouble,
-                let prevNumber = self.prevNumber?.toDouble{
+            let firstNumber = self.firstNumber?.toDouble,
+            let prevNumber = self.prevNumber?.toDouble {
             
             let result = self.getOperarionResult(prevOperation, firstNumber, prevNumber)
-            let resultString = self.eitherNumberIsDecimal ? result.description : result.toInt?.description
+            let resultString = result.description
             
             self.firstNumber = resultString
-            
         }
     }
     
-    private func didSelectOperation(with operation: CalculatorOperation){
+    private func didSelectOperation(with operation: CalculatorOperation) {
         
         if self.currentNumber == .firstNumber {
             self.operation = operation
             self.currentNumber = .secondNumber
-        } else if self.currentNumber == .secondNumber{
+        } else if self.currentNumber == .secondNumber {
             
             if let prevOperation = self.operation,
-               let firstNumber = self.firstNumber?.toDouble,
-               let secondNumber = self.secondNumber?.toDouble {
+                let firstNumber = self.firstNumber?.toDouble,
+                let secondNumber = self.secondNumber?.toDouble {
                 
                 let result = self.getOperarionResult(prevOperation, firstNumber, secondNumber)
-                let resultString = self.eitherNumberIsDecimal ? result.description : result.toInt?.description
+                let resultString = result.description
                 
                 self.secondNumber = nil
                 self.firstNumber = resultString
