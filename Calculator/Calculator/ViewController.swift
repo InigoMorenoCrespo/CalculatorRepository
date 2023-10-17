@@ -10,6 +10,7 @@ import UIKit
 class ViewController: UIViewController {
     
     let calculatorViewModel: ViewModel
+    var selectedOperatorIndex: Int? = nil
     
     
     private let collectionView: UICollectionView = {
@@ -108,6 +109,7 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource, 
             
         }
         
+        
         return cell
 
     }
@@ -141,8 +143,14 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource, 
         return 10
     }
     
-    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath){
+        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ButtonCell.identifer, for: indexPath) as? ButtonCell else{
+            fatalError("failed")
+        }
         let buttonCell = self.calculatorViewModel.calcButtonCells[indexPath.row]
+        if calculatorViewModel.isOperation(calcButton: buttonCell){
+            cell.setOperationSelected()
+        }
         self.calculatorViewModel.didSelectButton(with: buttonCell)
     }
     
