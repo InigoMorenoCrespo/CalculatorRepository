@@ -11,7 +11,7 @@ class ButtonCell: UICollectionViewCell {
     
     static let identifer = "ButtonCell"
     
-    private(set) var calculatorButton: CalculatorButton!
+    internal var calculatorButton: CalculatorButton!
     
     private let titleLabel: UILabel = {
         let label = UILabel()

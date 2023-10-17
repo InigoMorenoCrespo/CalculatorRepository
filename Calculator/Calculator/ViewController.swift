@@ -9,7 +9,7 @@ import UIKit
 
 class ViewController: UIViewController {
     
-    let viewModel: ViewControllerViewModel
+    let calculatorViewModel: ViewModel
     
     
     private let collectionView: UICollectionView = {
@@ -23,8 +23,8 @@ class ViewController: UIViewController {
         return collectionView
     }()
     
-    init(_ viewModel: ViewControllerViewModel = ViewControllerViewModel()){
-        self.viewModel = viewModel
+    init(_ viewModel: ViewModel = ViewModel()){
+        self.calculatorViewModel = viewModel
         super.init(nibName: nil , bundle: nil)
     }
     
@@ -40,7 +40,7 @@ class ViewController: UIViewController {
         self.collectionView.delegate = self
         self.collectionView.dataSource = self
         
-        self.viewModel.updateViews = { [weak self] in
+        self.calculatorViewModel.updateViews = { [weak self] in
             DispatchQueue.main.async { [weak self] in
                 self?.collectionView.reloadData()
             }
@@ -71,7 +71,7 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource, 
         guard let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: CalcHeaderCell.identifer, for: indexPath) as? CalcHeaderCell else {
             fatalError("Failed to dequeue")
         }
-        header.configure(currentClacText: self.viewModel.calHeaderLabel)
+        header.configure(currentClacText: self.calculatorViewModel.setCalHeaderLabel())
         return header
     }
     
@@ -91,28 +91,29 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource, 
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return self.viewModel.calcButtonCells.count
+        return self.calculatorViewModel.calcButtonCells.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ButtonCell.identifer, for: indexPath) as? ButtonCell else{
             fatalError("failed")
         }
-        let calcButton = self.viewModel.calcButtonCells[indexPath.row]
+        let calcButton = self.calculatorViewModel.calcButtonCells[indexPath.row]
         
         cell.configure(with: calcButton)
         
-        if let operation = self.viewModel.operation, self.viewModel.secondNumber == nil{
-            if operation.title == calcButton.title {
-                cell.setOperationSelected()
-            }
+        if calculatorViewModel.canOperate() && calculatorViewModel.setOperation().description == calcButton.title {
+           
+            cell.setOperationSelected()
+            
         }
         
         return cell
+
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        let calcButton = self.viewModel.calcButtonCells[indexPath.row]
+        let calcButton = self.calculatorViewModel.calcButtonCells[indexPath.row]
         
         switch calcButton {
         case let .number(int) where int == 0:
@@ -141,8 +142,8 @@ extension ViewController: UICollectionViewDelegate, UICollectionViewDataSource, 
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let buttonCell = self.viewModel.calcButtonCells[indexPath.row]
-        self.viewModel.didSelectButton(with: buttonCell)
+        let buttonCell = self.calculatorViewModel.calcButtonCells[indexPath.row]
+        self.calculatorViewModel.didSelectButton(with: buttonCell)
     }
     
 }
